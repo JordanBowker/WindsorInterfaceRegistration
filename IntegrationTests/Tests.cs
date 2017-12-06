@@ -1,6 +1,7 @@
 ﻿using Castle.MicroKernel.Registration;
 using Castle.Windsor;
 using NUnit.Framework;
+using System.Linq;
 using WindsorInterfaceRegistration.Domain.Factories;
 using WindsorInterfaceRegistration.Domain.Factories.DataContracts;
 using WindsorInterfaceRegistration.Domain.Settings.DataContracts;
@@ -20,7 +21,10 @@ namespace WindsorInterfaceRegistration.IntegrationTests
 			_windsorContainer = new WindsorContainer();
 
 			_windsorContainer.Register(Component.For<ISettingsFactory>().ImplementedBy<SettingsFactory>());
-			_windsorContainer.Register(Component.For<IGlobalSettings, ILocalSettingsA, ILocalSettingsB>().UsingFactory((ISettingsFactory factory) => factory.GetSettings()));
+
+			var settingsTypes = typeof(IGlobalSettings).GetInterfaces().ToList();
+			settingsTypes.Add(typeof(IGlobalSettings));
+			settingsTypes.ForEach(x => _windsorContainer.Register(Component.For(x).UsingFactory((ISettingsFactory factory) => factory.GetSettings())));
 
 			_windsorContainer.Register(Component.For<IGlobalWorker>().ImplementedBy<GlobalWorker>());
 			_windsorContainer.Register(Component.For<IWorkerA>().ImplementedBy<WorkerA>());
